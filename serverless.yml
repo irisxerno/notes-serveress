@@ -1,0 +1,58 @@
+# Happy Coding!
+
+service: notes-serveress
+
+frameworkVersion: "=1.58.0"
+provider:
+  name: aws
+  runtime: ruby2.5
+
+  stage: dev
+  region: us-east-2
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+#       Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+      Resource: 'arn:aws:dynamodb:us-west-2:*:*'
+
+functions:
+  read:
+    handler: read.lambda_handler
+    events:
+      - http:
+          path: /
+          method: post
+  write:
+    handler: write.lambda_handler
+    events:
+      - http:
+          path: /
+          method: post
+  delete:
+    handler: delete.lambda_handler
+    events:
+      - http:
+          path: /
+          method: post
+
+resources:
+  Resources:
+    notesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: notes
+        AttributeDefinitions:
+          - AttributeName: Key
+           AttributeType: S
+          - AttributeName: User
+           AttributeType: S
+        KeySchema:
+          - AttributeName: Key
+           KeyType: HASH
+          - AttributeName: User
+           KeyType: RANGE
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
